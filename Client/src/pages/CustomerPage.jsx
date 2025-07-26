@@ -6,7 +6,7 @@ const CustomerPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-fetch("http://localhost:5000/api/restaurant/all")
+fetch("https://restaurant-queue-management.onrender.com/api/restaurant/all")
       .then((res) => res.json())
       .then((data) => setRestaurants(data))
       .catch((error) => console.error("Error fetching restaurants:", error));

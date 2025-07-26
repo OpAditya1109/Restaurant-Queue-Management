@@ -3,7 +3,14 @@ import API from '../api';
 import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({
+  name: '',
+  email: '',
+  password: '',
+  address: '',
+  phone: '',
+});
+
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
@@ -51,6 +58,24 @@ const Register = () => {
             required
             className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          <input
+  type="text"
+  name="address"
+  placeholder="Restaurant Address"
+  onChange={handleChange}
+  required
+  className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+/>
+
+<input
+  type="tel"
+  name="phone"
+  placeholder="Phone Number"
+  onChange={handleChange}
+  required
+  className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+/>
+
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"

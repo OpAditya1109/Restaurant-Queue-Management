@@ -12,7 +12,7 @@ const RestaurantDetail = () => {
   // Fetch restaurant info
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/restaurant/${id}`)
+      .get(`https://restaurant-queue-management.onrender.com/api/restaurant/${id}`)
       .then((res) => setRestaurant(res.data))
       .catch((err) => console.error("Error fetching restaurant:", err));
   }, [id]);
@@ -22,7 +22,7 @@ const RestaurantDetail = () => {
 useEffect(() => {
   const interval = setInterval(() => {
     axios
-      .get(`http://localhost:5000/api/queue/${id}`)
+      .get(`https://restaurant-queue-management.onrender.com/api/queue/${id}`)
       .then((res) => {
         setQueue(res.data);
         const storedName = localStorage.getItem(`queueName_${id}`);
@@ -42,13 +42,13 @@ useEffect(() => {
     if (!name.trim()) return alert("Please enter your name");
 
     try {
-      await axios.post("http://localhost:5000/api/queue/join", {
+      await axios.post("https://restaurant-queue-management.onrender.com/api/queue/join", {
         name,
         restaurantId: id,
       });
 
       localStorage.setItem(`queueName_${id}`, name);
-      const updatedQueue = await axios.get(`http://localhost:5000/api/queue/${id}`);
+      const updatedQueue = await axios.get(`https://restaurant-queue-management.onrender.com/api/queue/${id}`);
       const pos = updatedQueue.data.findIndex((entry) => entry.name === name);
       setQueue(updatedQueue.data);
       setYourNumber(pos + 1);
@@ -59,7 +59,7 @@ useEffect(() => {
 
   const handleLeaveQueue = async () => {
     try {
-      await axios.post("http://localhost:5000/api/queue/leave", {
+      await axios.post("https://restaurant-queue-management.onrender.com/api/queue/leave", {
         name,
         restaurantId: id,
       });
@@ -67,7 +67,7 @@ useEffect(() => {
       localStorage.removeItem(`queueName_${id}`);
       setYourNumber(null);
       setName("");
-      const updatedQueue = await axios.get(`http://localhost:5000/api/queue/${id}`);
+      const updatedQueue = await axios.get(`https://restaurant-queue-management.onrender.com/api/queue/${id}`);
       setQueue(updatedQueue.data);
     } catch (err) {
       alert("Error leaving queue");

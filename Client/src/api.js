@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api', // Adjust based on your backend
+  baseURL: 'https://restaurant-queue-management.onrender.com/api', // Adjust based on your backend
 });
 
 API.interceptors.request.use((config) => {

@@ -28,7 +28,7 @@ const QueuePanel = () => {
 
   const fetchQueue = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/queue/${restaurantId}`);
+      const res = await fetch(`https://restaurant-queue-management.onrender.com/api/queue/${restaurantId}`);
       const data = await res.json();
       setQueue(data);
     } catch (err) {
@@ -47,7 +47,7 @@ const QueuePanel = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/queue/join`, {
+      const res = await fetch(`https://restaurant-queue-management.onrender.com/api/queue/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, restaurantId }),
@@ -71,7 +71,7 @@ const QueuePanel = () => {
     if (!userEntry) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/queue/leave`, {
+      const res = await fetch(`https://restaurant-queue-management.onrender.com/api/queue/leave`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: userEntry.name, restaurantId }),
@@ -93,7 +93,7 @@ const QueuePanel = () => {
     if (!window.confirm(`Mark ${name} as seated?`)) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/queue/mark-seated`, {
+      const res = await fetch(`https://restaurant-queue-management.onrender.com/api/queue/mark-seated`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, restaurantId }),
