@@ -10,19 +10,29 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // Register
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone, address } = req.body;
 
+  // Check if restaurant already exists by email
   const existing = await Restaurant.findOne({ email });
   if (existing) return res.status(400).json({ message: 'Email already in use' });
 
   const slug = name.toLowerCase().replace(/\s+/g, '');
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const newRestaurant = new Restaurant({ name, slug, email, passwordHash });
+  const newRestaurant = new Restaurant({
+    name,
+    slug,
+    email,
+    phone,       // ✅ Added
+    address,     // ✅ Added
+    passwordHash,
+  });
+
   await newRestaurant.save();
 
   res.json({ message: 'Registered successfully' });
 });
+
 
 // Login
 router.post('/login', async (req, res) => {
