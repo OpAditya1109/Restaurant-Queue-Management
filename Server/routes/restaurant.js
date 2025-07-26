@@ -41,7 +41,8 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
       profile: {
         name: restaurant.name,
         email: restaurant.email,
-        address: restaurant.address || '',
+        phone: restaurant.phone || '',      // ✅ Include phone number
+        address: restaurant.address || '',  // ✅ Already included
       },
     });
   } catch (err) {
@@ -49,6 +50,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 router.get("/:id", async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id);
