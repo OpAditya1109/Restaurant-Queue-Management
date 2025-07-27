@@ -8,6 +8,7 @@ const RestaurantDetail = () => {
   const [queue, setQueue] = useState([]);
   const [yourNumber, setYourNumber] = useState(null);
   const [name, setName] = useState(localStorage.getItem(`queueName_${id}`) || "");
+  const [seats, setSeats] = useState(localStorage.getItem(`queueSeats_${id}`) || 1);
 
   // Fetch restaurant info
   useEffect(() => {
@@ -17,37 +18,41 @@ const RestaurantDetail = () => {
       .catch((err) => console.error("Error fetching restaurant:", err));
   }, [id]);
 
-  // Fetch queue and calculate your number
- // Auto-refresh queue every 1 minute
-useEffect(() => {
-  const interval = setInterval(() => {
-    axios
-      .get(`https://restaurant-queue-management.onrender.com/api/queue/${id}`)
-      .then((res) => {
-        setQueue(res.data);
-        const storedName = localStorage.getItem(`queueName_${id}`);
-        if (storedName) {
-          const pos = res.data.findIndex((entry) => entry.name === storedName);
-          setYourNumber(pos !== -1 ? pos + 1 : null);
-        }
-      })
-      .catch((err) => console.error("Error auto-refreshing queue:", err));
-  }, 5000); // 60,000ms = 1 minute
+  // Auto-refresh queue every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      axios
+        .get(`https://restaurant-queue-management.onrender.com/api/queue/${id}`)
+        .then((res) => {
+          setQueue(res.data);
+          const storedName = localStorage.getItem(`queueName_${id}`);
+          const storedSeats = localStorage.getItem(`queueSeats_${id}`);
+          if (storedSeats) setSeats(storedSeats);
+          if (storedName) {
+            const pos = res.data.findIndex((entry) => entry.name === storedName);
+            setYourNumber(pos !== -1 ? pos + 1 : null);
+          }
+        })
+        .catch((err) => console.error("Error auto-refreshing queue:", err));
+    }, 5000);
 
-  return () => clearInterval(interval); // cleanup on unmount
-}, [id]);
-
+    return () => clearInterval(interval);
+  }, [id]);
 
   const handleJoinQueue = async () => {
     if (!name.trim()) return alert("Please enter your name");
+    if (!seats || seats < 1) return alert("Please enter a valid number of seats");
 
     try {
       await axios.post("https://restaurant-queue-management.onrender.com/api/queue/join", {
         name,
         restaurantId: id,
+        seats,
       });
 
       localStorage.setItem(`queueName_${id}`, name);
+      localStorage.setItem(`queueSeats_${id}`, seats);
+
       const updatedQueue = await axios.get(`https://restaurant-queue-management.onrender.com/api/queue/${id}`);
       const pos = updatedQueue.data.findIndex((entry) => entry.name === name);
       setQueue(updatedQueue.data);
@@ -65,8 +70,11 @@ useEffect(() => {
       });
 
       localStorage.removeItem(`queueName_${id}`);
+      localStorage.removeItem(`queueSeats_${id}`);
       setYourNumber(null);
       setName("");
+      setSeats(1);
+
       const updatedQueue = await axios.get(`https://restaurant-queue-management.onrender.com/api/queue/${id}`);
       setQueue(updatedQueue.data);
     } catch (err) {
@@ -115,6 +123,14 @@ useEffect(() => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+            <input
+              type="number"
+              className="border rounded w-full p-2 mb-4"
+              placeholder="Number of seats"
+              value={seats}
+              min={1}
+              onChange={(e) => setSeats(Number(e.target.value))}
+            />
             <button
               onClick={handleJoinQueue}
               className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 w-full"
@@ -125,6 +141,8 @@ useEffect(() => {
         ) : (
           <>
             <h2 className="text-lg font-semibold mb-4">You're in the Queue!</h2>
+            <p className="text-gray-600 mb-2">Name: <strong>{name}</strong></p>
+            <p className="text-gray-600 mb-4">Seats: <strong>{seats}</strong></p>
             <button
               onClick={handleLeaveQueue}
               className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full"

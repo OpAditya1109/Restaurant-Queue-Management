@@ -47,10 +47,14 @@ router.get('/:restaurantId', async (req, res) => {
 // Join the queue for a restaurant
 router.post('/join', async (req, res) => {
   try {
-    const { name, restaurantId } = req.body;
+    const { name, restaurantId, seats } = req.body;
 
     if (!name || !restaurantId) {
       return res.status(400).json({ message: 'Name and restaurantId are required' });
+    }
+
+    if (!seats || seats < 1) {
+      return res.status(400).json({ message: 'Number of seats must be at least 1' });
     }
 
     // Prevent duplicate entries
@@ -59,7 +63,12 @@ router.post('/join', async (req, res) => {
       return res.status(409).json({ message: 'Already in queue' });
     }
 
-    const newEntry = new Queue({ name, restaurantId });
+    const newEntry = new Queue({
+      name: name.trim(),
+      restaurantId,
+      seats,
+    });
+
     await newEntry.save();
 
     res.status(201).json({ message: 'Joined the queue successfully' });
@@ -68,6 +77,7 @@ router.post('/join', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // Leave the queue
 router.post('/leave', async (req, res) => {

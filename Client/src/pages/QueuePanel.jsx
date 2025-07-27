@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 const QueuePanel = () => {
   const [queue, setQueue] = useState([]);
   const [name, setName] = useState('');
+  const [seats, setSeats] = useState(1);
   const [userEntry, setUserEntry] = useState(null);
   const [restaurantId, setRestaurantId] = useState('');
 
@@ -38,7 +39,8 @@ const QueuePanel = () => {
 
   const joinQueue = async (e) => {
     e.preventDefault();
-    if (!name) return;
+    if (!name.trim()) return;
+    if (!seats || seats < 1) return alert("Please enter a valid number of seats.");
 
     const alreadyInQueue = queue.some(q => q.name.toLowerCase() === name.toLowerCase());
     if (alreadyInQueue) {
@@ -50,14 +52,16 @@ const QueuePanel = () => {
       const res = await fetch(`https://restaurant-queue-management.onrender.com/api/queue/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, restaurantId }),
+        body: JSON.stringify({ name, restaurantId, seats }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem('queueUser', JSON.stringify({ name }));
-        setUserEntry({ name });
+        const user = { name, seats };
+        localStorage.setItem('queueUser', JSON.stringify(user));
+        setUserEntry(user);
         setName('');
+        setSeats(1);
         fetchQueue();
       } else {
         alert(data.message || 'Failed to join queue.');
@@ -124,7 +128,8 @@ const QueuePanel = () => {
 
       {userEntry ? (
         <div className="mt-6 p-4 border rounded shadow">
-          <p className="font-semibold text-lg mb-4 text-center">Welcome, {userEntry.name}!</p>
+          <p className="font-semibold text-lg mb-2 text-center">Welcome, {userEntry.name}!</p>
+          <p className="text-center text-gray-600 mb-4">Seats: {userEntry.seats || 1}</p>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="bg-gray-100 p-3 rounded">
               <p className="text-gray-600 text-sm">Total in Queue</p>
@@ -157,6 +162,15 @@ const QueuePanel = () => {
             className="w-full border p-2 rounded"
             required
           />
+          <input
+            type="number"
+            placeholder="Number of seats"
+            value={seats}
+            min={1}
+            onChange={e => setSeats(Number(e.target.value))}
+            className="w-full border p-2 rounded"
+            required
+          />
           <button
             type="submit"
             className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded"
@@ -172,7 +186,9 @@ const QueuePanel = () => {
           {queue.map((entry, idx) => (
             <li key={entry._id} className="p-3 flex justify-between items-center">
               <div>
-                <span className="font-medium">{idx + 1}. {entry.name}</span>
+                <span className="font-medium">
+                  {idx + 1}. {entry.name} ({entry.seats || 1} seat{entry.seats > 1 ? 's' : ''})
+                </span>
                 {userEntry?.name === entry.name && (
                   <span className="ml-2 text-green-600 font-medium">(You)</span>
                 )}
