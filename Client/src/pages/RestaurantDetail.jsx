@@ -123,6 +123,8 @@ const RestaurantDetail = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+            <p className="text-sm text-gray-600 mb-1">Enter total seats required</p>
+
             <input
               type="number"
               className="border rounded w-full p-2 mb-4"
