@@ -22,6 +22,10 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/queue', queueRoutes); // ✅ Register queue routes
+// Add this in your Express server file
+app.get('/', (req, res) => {
+  res.status(200).send('Restaurant Queue Management Server is running.');
+});
 
 // MongoDB connection and server start
 mongoose.connect(process.env.MONGO_URI, {
