@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { FiUsers, FiClock, FiHash, FiCheckCircle } from 'react-icons/fi';
 
 const QueuePanel = () => {
   const [queue, setQueue] = useState([]);
-  const [name, setName] = useState('');
-  const [seats, setSeats] = useState(1);
-  const [userEntry, setUserEntry] = useState(null);
   const [restaurantId, setRestaurantId] = useState('');
 
   useEffect(() => {
@@ -18,11 +16,7 @@ const QueuePanel = () => {
 
   useEffect(() => {
     if (!restaurantId) return;
-
     fetchQueue();
-    const storedEntry = localStorage.getItem('queueUser');
-    if (storedEntry) setUserEntry(JSON.parse(storedEntry));
-
     const interval = setInterval(fetchQueue, 5000);
     return () => clearInterval(interval);
   }, [restaurantId]);
@@ -37,65 +31,8 @@ const QueuePanel = () => {
     }
   };
 
-  const joinQueue = async (e) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    if (!seats || seats < 1) return alert("Please enter a valid number of seats.");
-
-    const alreadyInQueue = queue.some(q => q.name.toLowerCase() === name.toLowerCase());
-    if (alreadyInQueue) {
-      alert("You're already in the queue.");
-      return;
-    }
-
-    try {
-      const res = await fetch(`https://restaurant-queue-management.onrender.com/api/queue/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, restaurantId, seats }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        const user = { name, seats };
-        localStorage.setItem('queueUser', JSON.stringify(user));
-        setUserEntry(user);
-        setName('');
-        setSeats(1);
-        fetchQueue();
-      } else {
-        alert(data.message || 'Failed to join queue.');
-      }
-    } catch (err) {
-      console.error('Error joining queue:', err);
-    }
-  };
-
-  const leaveQueue = async () => {
-    if (!userEntry) return;
-
-    try {
-      const res = await fetch(`https://restaurant-queue-management.onrender.com/api/queue/leave`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: userEntry.name, restaurantId }),
-      });
-
-      if (res.ok) {
-        localStorage.removeItem('queueUser');
-        setUserEntry(null);
-        fetchQueue();
-      } else {
-        alert('Failed to leave queue.');
-      }
-    } catch (err) {
-      console.error('Error leaving queue:', err);
-    }
-  };
-
   const markAsSeated = async (name) => {
     if (!window.confirm(`Mark ${name} as seated?`)) return;
-
     try {
       const res = await fetch(`https://restaurant-queue-management.onrender.com/api/queue/mark-seated`, {
         method: 'POST',
@@ -104,10 +41,6 @@ const QueuePanel = () => {
       });
 
       if (res.ok) {
-        if (userEntry?.name === name) {
-          localStorage.removeItem('queueUser');
-          setUserEntry(null);
-        }
         fetchQueue();
       } else {
         alert('Failed to mark as seated.');
@@ -117,94 +50,58 @@ const QueuePanel = () => {
     }
   };
 
-  const userPosition = queue.findIndex(q => q.name === userEntry?.name);
-  const estimatedWait = userPosition !== -1 ? userPosition * 5 : null;
+  const avgWait = queue.length * 3;
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-center bg-blue-100 py-3 rounded">
-        Restaurant Queue
-      </h2>
+    <div className="max-w-5xl mx-auto px-6 py-12 space-y-10">
+      <h1 className="text-4xl font-extrabold text-center text-indigo-800 mb-10 tracking-tight">Queue Management Dashboard</h1>
 
-      {userEntry ? (
-        <div className="mt-6 p-4 border rounded shadow">
-          <p className="font-semibold text-lg mb-2 text-center">Welcome, {userEntry.name}!</p>
-          <p className="text-center text-gray-600 mb-4">Seats: {userEntry.seats || 1}</p>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="bg-gray-100 p-3 rounded">
-              <p className="text-gray-600 text-sm">Total in Queue</p>
-              <p className="text-xl font-bold">{queue.length}</p>
-            </div>
-            <div className="bg-gray-100 p-3 rounded">
-              <p className="text-gray-600 text-sm">Estimated Wait</p>
-              <p className="text-xl font-bold">{estimatedWait} min</p>
-            </div>
-            <div className="bg-gray-100 p-3 rounded">
-              <p className="text-gray-600 text-sm">Your Number</p>
-              <p className="text-xl font-bold">{userPosition + 1}</p>
-            </div>
-          </div>
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <StatCard icon={<FiUsers />} label="People in Queue" value={queue.length} color="text-indigo-600" />
+        <StatCard icon={<FiClock />} label="Estimated Wait Time" value={`${avgWait} min`} color="text-emerald-600" />
+        <StatCard icon={<FiHash />} label="Current Token" value={queue.length ? queue.length : '-'} color="text-amber-600" />
+      </div>
 
-          <button
-            onClick={leaveQueue}
-            className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded"
-          >
-            Leave Queue
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={joinQueue} className="mt-6 space-y-4">
-          <input
-            type="text"
-            placeholder="Enter your name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <input
-            type="number"
-            placeholder="Number of seats"
-            value={seats}
-            min={1}
-            onChange={e => setSeats(Number(e.target.value))}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded"
-          >
-            Join Queue
-          </button>
-        </form>
-      )}
-
-      <div className="mt-10">
-        <h3 className="text-lg font-semibold mb-2">Live Queue</h3>
-        <ul className="divide-y border rounded">
-          {queue.map((entry, idx) => (
-            <li key={entry._id} className="p-3 flex justify-between items-center">
-              <div>
-                <span className="font-medium">
-                  {idx + 1}. {entry.name} ({entry.seats || 1} seat{entry.seats > 1 ? 's' : ''})
-                </span>
-                {userEntry?.name === entry.name && (
-                  <span className="ml-2 text-green-600 font-medium">(You)</span>
-                )}
-              </div>
-              <button
-                onClick={() => markAsSeated(entry.name)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-sm rounded"
+      {/* LIVE QUEUE */}
+      <div className="bg-white shadow-xl rounded-2xl p-6 border border-gray-200">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">📋 Live Queue</h2>
+        {queue.length === 0 ? (
+          <p className="text-gray-500 text-center">No customers in the queue.</p>
+        ) : (
+          <ul className="space-y-5 divide-y divide-gray-200">
+            {queue.map((entry, idx) => (
+              <li
+                key={entry._id}
+                className="flex justify-between items-center py-4 px-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-all"
               >
-                Mark as Seated
-              </button>
-            </li>
-          ))}
-        </ul>
+                <div>
+                  <p className="font-medium text-gray-900 text-lg">
+                    #{idx + 1} - {entry.name}{' '}
+                    <span className="text-sm text-gray-500">({entry.seats} seat{entry.seats > 1 ? 's' : ''})</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => markAsSeated(entry.name)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-green-700 focus:outline-none"
+                >
+                  <FiCheckCircle className="text-white" /> Mark Seated
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
 };
+
+const StatCard = ({ icon, label, value, color }) => (
+  <div className="bg-white border border-gray-200 shadow-sm rounded-xl p-5 flex flex-col items-center text-center">
+    <div className={`text-3xl mb-2 ${color}`}>{icon}</div>
+    <p className="text-gray-600 text-sm font-medium mb-1">{label}</p>
+    <p className="text-2xl font-bold text-gray-900">{value}</p>
+  </div>
+);
 
 export default QueuePanel;
