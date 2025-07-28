@@ -41,7 +41,7 @@ const RestaurantDetail = () => {
 
   const handleJoinQueue = async () => {
     if (!name.trim()) return alert("Please enter your name");
-    if (!seats || seats < 1) return alert("Please enter a valid number of seats");
+    if (!seats || seats < 1) return alert("Please select number of seats");
 
     try {
       await axios.post("https://restaurant-queue-management.onrender.com/api/queue/join", {
@@ -123,16 +123,20 @@ const RestaurantDetail = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <p className="text-sm text-gray-600 mb-1">Enter total seats required</p>
+            <p className="text-sm text-gray-600 mb-1">Select total seats required</p>
 
-            <input
-              type="number"
+            <select
               className="border rounded w-full p-2 mb-4"
-              placeholder="Number of seats"
               value={seats}
-              min={1}
               onChange={(e) => setSeats(Number(e.target.value))}
-            />
+            >
+              {[...Array(10)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {i + 1} Seat{i + 1 > 1 && "s"}
+                </option>
+              ))}
+            </select>
+
             <button
               onClick={handleJoinQueue}
               className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 w-full"
