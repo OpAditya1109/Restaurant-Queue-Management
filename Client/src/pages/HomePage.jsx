@@ -11,7 +11,7 @@ const HomePage = () => {
       {/* Hero Banner with Image */}
       <div className="relative">
         <img
-          src="https://source.unsplash.com/1600x700/?restaurant,dining"
+          src="Queue_restaurant_1.webp"
           alt="Restaurant Banner"
           className="w-full h-[500px] object-cover"
         />
