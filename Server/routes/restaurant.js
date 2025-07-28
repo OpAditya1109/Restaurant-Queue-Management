@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.get('/all', async (req, res) => {
   try {
-    const restaurants = await Restaurant.find().select('name'); // Only fetch name
+    const restaurants = await Restaurant.find().select('name phone address'); // Only fetch name
     res.json(restaurants);
   } catch (err) {
     console.error('Failed to fetch restaurants:', err);

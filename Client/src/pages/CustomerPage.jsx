@@ -32,8 +32,8 @@ fetch("https://restaurant-queue-management.onrender.com/api/restaurant/all")
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
                 {restaurant.name}
               </h3>
-              {/* <p className="text-gray-500">{restaurant.address}</p>
-              <p className="text-gray-500">Phone: {restaurant.phone}</p> */}
+              <p className="text-gray-500">{restaurant.address}</p>
+              <p className="text-gray-500">Phone: {restaurant.phone}</p>
             </div>
             <button
               onClick={() => handleJoinQueue(restaurant._id)}
